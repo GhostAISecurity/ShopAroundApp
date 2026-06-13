@@ -1,0 +1,42 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+
+# Databases
+*.db
+*.sqlite
+*.sqlite3
+
+# Environment
+.env
+venv/
+env/
+ENV/
+
+# Logs
+*.log
+shoparound.log
+watchdog.log
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Backups
+*.backup
+*_backup.py
+
+# Neural memory
+neural_memory.db
+ghost_memory.db
+ecosystem.db

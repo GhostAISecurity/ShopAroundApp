@@ -1,0 +1,22 @@
+{
+  "name": "shoparound",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*",
+    "services/*"
+  ],
+  "scripts": {
+    "dev": "pnpm -w -r --parallel dev",
+    "build": "pnpm -w -r build",
+    "lint": "pnpm -w -r lint",
+    "test": "pnpm -w -r test"
+  },
+  "devDependencies": {
+    "typescript": "^5.1.6",
+    "eslint": "^8.45.0",
+    "prettier": "^3.0.3",
+    "pnpm": "^8.9.0"
+  }
+}

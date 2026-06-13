@@ -1,0 +1,195 @@
+<!-- Mall Aggregator Component - Add to your existing frontend -->
+<div id="mallAggregator" class="card">
+    <div class="card-header">
+        <h2>🛍️ ShopAround Mega Mall</h2>
+        <div class="view-toggle">
+            <button onclick="showMallView('all')">All</button>
+            <button onclick="showMallView('nearby')">Nearby</button>
+            <button onclick="showMallView('online')">Online</button>
+            <button onclick="showMallView('map')">Map View</button>
+        </div>
+    </div>
+    
+    <!-- Categories -->
+    <div class="categories">
+        <div class="category" onclick="filterMall('grocery')">🥬 Grocery</div>
+        <div class="category" onclick="filterMall('electronics')">📱 Electronics</div>
+        <div class="category" onclick="filterMall('fashion')">👕 Fashion</div>
+        <div class="category" onclick="filterMall('hardware')">🔨 Hardware</div>
+        <div class="category" onclick="filterMall('pharmacy')">💊 Pharmacy</div>
+        <div class="category" onclick="filterMall('services')">🛠️ Services</div>
+        <div class="category" onclick="filterMall('restaurant')">🍔 Restaurants</div>
+        <div class="category" onclick="filterMall('auto')">🚗 Auto</div>
+        <div class="category" onclick="filterMall('pet')">🐕 Pet</div>
+        <div class="category" onclick="filterMall('baby')">👶 Baby</div>
+        <div class="category" onclick="filterMall('furniture')">🛋️ Furniture</div>
+        <div class="category" onclick="filterMall('sports')">🏃 Sports</div>
+        <div class="category" onclick="filterMall('books')">📚 Books</div>
+    </div>
+    
+    <!-- Search Bar -->
+    <div class="search-bar">
+        <input type="text" id="mallSearch" placeholder="Search products, shops, services..." onkeyup="searchMall()">
+        <button onclick="searchMall()">🔍 Search</button>
+    </div>
+    
+    <!-- Map View -->
+    <div id="mallMap" style="height: 400px; display: none; margin-top: 1rem;"></div>
+    
+    <!-- Results Grid -->
+    <div id="mallResults" class="mall-grid"></div>
+</div>
+
+<style>
+.categories {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+.category {
+    padding: 0.5rem 1rem;
+    background: #e8f5e9;
+    border-radius: 2rem;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+}
+.category:hover { background: #1f8a4c; color: white; }
+.search-bar {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+.search-bar input { flex: 1; }
+.mall-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+}
+.mall-card {
+    background: white;
+    border-radius: 1rem;
+    padding: 1rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 1px solid #e5e7eb;
+}
+.mall-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+}
+.mall-card h3 { color: #1f8a4c; margin-bottom: 0.5rem; }
+.mall-card .distance { font-size: 0.8rem; color: #666; }
+.mall-card .badge { display: inline-block; padding: 0.2rem 0.5rem; background: #e8f5e9; border-radius: 1rem; font-size: 0.7rem; margin-right: 0.5rem; }
+.view-toggle { display: flex; gap: 0.5rem; }
+.view-toggle button { padding: 0.3rem 0.8rem; font-size: 0.8rem; width: auto; background: #e5e7eb; color: #333; }
+.view-toggle button.active { background: #1f8a4c; color: white; }
+</style>
+
+<script>
+let mallData = { retailers: [], services: [], nearby: [] };
+let mallMap = null;
+
+async function loadMall() {
+    // Load retailers from your existing API
+    const retailersRes = await fetch('/api/retailers');
+    mallData.retailers = await retailersRes.json();
+    
+    // Load services
+    const servicesRes = await fetch('/api/services');
+    mallData.services = await servicesRes.json();
+    
+    renderMall(mallData.retailers.concat(mallData.services));
+}
+
+function renderMall(items) {
+    const container = document.getElementById('mallResults');
+    container.innerHTML = items.map(item => `
+        <div class="mall-card" onclick="viewBusiness('${item.name}', ${item.latitude || 0}, ${item.longitude || 0})">
+            <h3>${item.logo || '🏪'} ${item.name}</h3>
+            <div class="badge">${item.category || item.service_type || 'Business'}</div>
+            ${item.rating ? `<span>⭐ ${item.rating}</span>` : ''}
+            ${item.distance_km ? `<div class="distance">📍 ${item.distance_km}km away</div>` : ''}
+            ${item.website ? `<div class="distance">🌐 <a href="${item.website}" target="_blank">Visit Website</a></div>` : ''}
+            ${item.phone ? `<div class="distance">📞 ${item.phone}</div>` : ''}
+        </div>
+    `).join('');
+}
+
+function filterMall(category) {
+    const all = mallData.retailers.concat(mallData.services);
+    const filtered = all.filter(item => 
+        (item.category && item.category.toLowerCase().includes(category)) ||
+        (item.service_type && item.service_type.toLowerCase().includes(category))
+    );
+    renderMall(filtered);
+}
+
+function searchMall() {
+    const query = document.getElementById('mallSearch').value.toLowerCase();
+    const all = mallData.retailers.concat(mallData.services);
+    const filtered = all.filter(item => 
+        item.name.toLowerCase().includes(query) ||
+        (item.category && item.category.toLowerCase().includes(query)) ||
+        (item.service_type && item.service_type.toLowerCase().includes(query))
+    );
+    renderMall(filtered);
+}
+
+function showMallView(view) {
+    if (view === 'map') {
+        document.getElementById('mallMap').style.display = 'block';
+        initMallMap();
+    } else {
+        document.getElementById('mallMap').style.display = 'none';
+        if (view === 'nearby') {
+            findNearbyBusinesses();
+        } else if (view === 'online') {
+            renderMall(mallData.retailers);
+        } else {
+            renderMall(mallData.retailers.concat(mallData.services));
+        }
+    }
+}
+
+async function findNearbyBusinesses() {
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(async (pos) => {
+            const res = await fetch(`/api/maps/nearby?lat=${pos.coords.latitude}&lng=${pos.coords.longitude}&radius=5`);
+            const data = await res.json();
+            renderMall(data.places);
+        });
+    }
+}
+
+function initMallMap() {
+    if (mallMap) return;
+    mallMap = L.map('mallMap').setView([-26.2041, 28.0473], 12);
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>'
+    }).addTo(mallMap);
+    
+    // Add markers for all businesses
+    const all = mallData.retailers.concat(mallData.services);
+    all.forEach(b => {
+        if (b.latitude && b.longitude) {
+            L.marker([b.latitude, b.longitude])
+                .addTo(mallMap)
+                .bindPopup(`<b>${b.name}</b><br>${b.category || b.service_type || 'Business'}`);
+        }
+    });
+}
+
+function viewBusiness(name, lat, lng) {
+    if (lat && lng) {
+        window.open(`https://www.openstreetmap.org/directions?from=&to=${lat},${lng}`, '_blank');
+    } else {
+        window.open(`https://www.google.com/search?q=${name}`, '_blank');
+    }
+}
+
+// Load mall on page load
+loadMall();
+</script>
