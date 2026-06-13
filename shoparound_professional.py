@@ -37,35 +37,46 @@ from functools import wraps
 app = Flask(__name__)
 app.config["SECRET_KEY"] = secrets.token_hex(32)
 app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(days=7)
-app.config["SESSION_COOKIE_SECURE"] = False  # Set to True in production with HTTPS
+# Set to True in production with HTTPS
+app.config["SESSION_COOKIE_SECURE"] = False
 app.config["SESSION_COOKIE_HTTPONLY"] = True
 app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
 
-DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "shoparound.db")
+DB_PATH = os.path.join(
+    os.path.dirname(
+        os.path.abspath(__file__)),
+    "shoparound.db")
 
 # ====================================================
 # NEURAL AI BRAIN - SEDIBA GHOST OMNIVERSAL MIND
 # ====================================================
 
+
 class NeuralMemory:
     def __init__(self):
         self.memories = []
-    
+
     def store(self, event):
         self.memories.append(event)
         if len(self.memories) > 100:
             self.memories = self.memories[-100:]
-    
+
     def recall(self, limit=10):
         return self.memories[-limit:]
+
 
 class NeuralAgent:
     def __init__(self, name, weight):
         self.name = name
         self.weight = weight
-    
+
     def evaluate(self, context):
-        return {"agent": self.name, "recommendation": "APPROVE", "confidence": 0.8, "weight": self.weight}
+        return {
+            "agent": self.name,
+            "recommendation": "APPROVE",
+            "confidence": 0.8,
+            "weight": self.weight}
+
 
 class GhostBrain:
     def __init__(self):
@@ -77,15 +88,20 @@ class GhostBrain:
             NeuralAgent("Operations Agent", 0.25),
             NeuralAgent("Founder Agent", 0.50)
         ]
-    
+
     def think(self, context):
         evaluations = [a.evaluate(context) for a in self.agents]
         total_weight = sum(a.weight for a in self.agents)
-        approval = sum(e["confidence"] * e["weight"] for e in evaluations) / total_weight
+        approval = sum(e["confidence"] * e["weight"]
+                       for e in evaluations) / total_weight
         verdict = "APPROVED" if approval > 0.6 else "DEFERRED" if approval > 0.4 else "REJECTED"
-        result = {"verdict": verdict, "approval_score": approval, "evaluations": evaluations}
+        result = {
+            "verdict": verdict,
+            "approval_score": approval,
+            "evaluations": evaluations}
         self.memory.store(result)
         return result
+
 
 neural_brain = GhostBrain()
 
@@ -93,11 +109,12 @@ neural_brain = GhostBrain()
 # COMPLETE DATABASE WITH ALL ENTITIES
 # ====================================================
 
+
 def init_db():
     conn = sqlite3.connect(DB_PATH)
-    
+
     # ========== CORE TABLES ==========
-    
+
     # Users table
     conn.execute("""
         CREATE TABLE IF NOT EXISTS users (
@@ -119,7 +136,7 @@ def init_db():
             last_login TIMESTAMP
         )
     """)
-    
+
     # ========== RETAILERS (50+ South African Online Shops) ==========
     conn.execute("""
         CREATE TABLE IF NOT EXISTS retailers (
@@ -141,7 +158,7 @@ def init_db():
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     """)
-    
+
     # ========== SERVICE PROVIDERS (All trades) ==========
     conn.execute("""
         CREATE TABLE IF NOT EXISTS service_providers (
@@ -160,7 +177,7 @@ def init_db():
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     """)
-    
+
     # ========== SPAZA SHOPS (Informal Economy) ==========
     conn.execute("""
         CREATE TABLE IF NOT EXISTS spaza_shops (
@@ -181,7 +198,7 @@ def init_db():
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     """)
-    
+
     # ========== PHARMACIES ==========
     conn.execute("""
         CREATE TABLE IF NOT EXISTS pharmacies (
@@ -197,7 +214,7 @@ def init_db():
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     """)
-    
+
     # ========== DELIVERY SERVICES ==========
     conn.execute("""
         CREATE TABLE IF NOT EXISTS delivery_services (
@@ -212,7 +229,7 @@ def init_db():
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     """)
-    
+
     # ========== PRODUCTS CATALOG ==========
     conn.execute("""
         CREATE TABLE IF NOT EXISTS products (
@@ -226,7 +243,7 @@ def init_db():
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     """)
-    
+
     # ========== SHOPPING LISTS ==========
     conn.execute("""
         CREATE TABLE IF NOT EXISTS shopping_lists (
@@ -239,7 +256,7 @@ def init_db():
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     """)
-    
+
     # ========== SHOPPING LIST ITEMS ==========
     conn.execute("""
         CREATE TABLE IF NOT EXISTS shopping_list_items (
@@ -252,7 +269,7 @@ def init_db():
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     """)
-    
+
     # ========== PRICE ALERTS ==========
     conn.execute("""
         CREATE TABLE IF NOT EXISTS price_alerts (
@@ -264,7 +281,7 @@ def init_db():
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     """)
-    
+
     # ========== COMMUNITY PRICES ==========
     conn.execute("""
         CREATE TABLE IF NOT EXISTS community_prices (
@@ -280,7 +297,7 @@ def init_db():
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     """)
-    
+
     # ========== BUSINESSES ==========
     conn.execute("""
         CREATE TABLE IF NOT EXISTS businesses (
@@ -297,77 +314,112 @@ def init_db():
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     """)
-    
-    # ========== SEED ALL RETAILERS (50+ South African Online Stores) ==========
-    
+
+    # ========== SEED ALL RETAILERS (50+ South African Online Stores) ========
+
     retailers_data = [
         # Grocery Stores
-        ("Checkers", "Grocery", "Supermarket", "https://checkers.co.za", "🛒", 35, 350, 60, 4.2, -26.2041, 28.0473, "Sandton City, Johannesburg", "011 123 4567"),
-        ("Shoprite", "Grocery", "Supermarket", "https://shoprite.co.za", "🛒", 35, 350, 60, 4.1, -26.2041, 28.0473, "Sandton City, Johannesburg", "011 123 4568"),
-        ("Woolworths", "Grocery", "Premium", "https://woolworths.co.za", "🥩", 45, 450, 60, 4.5, -26.146, 28.034, "Rosebank, Johannesburg", "011 123 4569"),
-        ("Pick n Pay", "Grocery", "Supermarket", "https://pnp.co.za", "🛒", 35, 350, 60, 4.2, -26.107, 28.055, "Sandton City", "011 123 4570"),
-        ("Spar", "Grocery", "Supermarket", "https://spar.co.za", "🛒", 35, 350, 60, 4.0, -25.754, 28.234, "Hatfield, Pretoria", "012 123 4571"),
-        ("Food Lovers Market", "Grocery", "Fresh", "https://foodloversmarket.co.za", "🥬", 30, 300, 45, 4.3, -25.785, 28.295, "Faerie Glen, Pretoria", "012 123 4572"),
-        
+        ("Checkers", "Grocery", "Supermarket", "https://checkers.co.za", "🛒", 35, 350,
+         60, 4.2, -26.2041, 28.0473, "Sandton City, Johannesburg", "011 123 4567"),
+        ("Shoprite", "Grocery", "Supermarket", "https://shoprite.co.za", "🛒", 35, 350,
+         60, 4.1, -26.2041, 28.0473, "Sandton City, Johannesburg", "011 123 4568"),
+        ("Woolworths", "Grocery", "Premium", "https://woolworths.co.za", "🥩", 45,
+         450, 60, 4.5, -26.146, 28.034, "Rosebank, Johannesburg", "011 123 4569"),
+        ("Pick n Pay", "Grocery", "Supermarket", "https://pnp.co.za", "🛒",
+         35, 350, 60, 4.2, -26.107, 28.055, "Sandton City", "011 123 4570"),
+        ("Spar", "Grocery", "Supermarket", "https://spar.co.za", "🛒", 35,
+         350, 60, 4.0, -25.754, 28.234, "Hatfield, Pretoria", "012 123 4571"),
+        ("Food Lovers Market", "Grocery", "Fresh", "https://foodloversmarket.co.za", "🥬",
+         30, 300, 45, 4.3, -25.785, 28.295, "Faerie Glen, Pretoria", "012 123 4572"),
+
         # E-commerce
-        ("Takealot", "E-commerce", "General", "https://takealot.com", "🛍️", 50, 500, 120, 4.4, -33.9249, 18.4241, "Cape Town", "021 123 4573"),
-        ("Makro", "E-commerce", "Wholesale", "https://makro.co.za", "🏪", 50, 500, 90, 4.0, -25.800, 28.333, "Silverlakes, Pretoria", "012 123 4574"),
-        ("Game", "E-commerce", "General", "https://game.co.za", "🎮", 50, 500, 90, 3.9, -25.780, 28.275, "Menlyn, Pretoria", "012 123 4575"),
-        
+        ("Takealot", "E-commerce", "General", "https://takealot.com", "🛍️",
+         50, 500, 120, 4.4, -33.9249, 18.4241, "Cape Town", "021 123 4573"),
+        ("Makro", "E-commerce", "Wholesale", "https://makro.co.za", "🏪", 50,
+         500, 90, 4.0, -25.800, 28.333, "Silverlakes, Pretoria", "012 123 4574"),
+        ("Game", "E-commerce", "General", "https://game.co.za", "🎮", 50,
+         500, 90, 3.9, -25.780, 28.275, "Menlyn, Pretoria", "012 123 4575"),
+
         # Electronics
-        ("Incredible Connection", "Electronics", "Tech", "https://incredible.co.za", "💻", 60, 600, 90, 4.1, -26.107, 28.055, "Sandton City", "011 123 4576"),
-        ("HiFi Corp", "Electronics", "Audio", "https://hificorp.co.za", "🎧", 60, 600, 90, 4.0, -26.2041, 28.0473, "Johannesburg CBD", "011 123 4577"),
-        ("Vodacom", "Electronics", "Mobile", "https://vodacom.co.za", "📱", 40, 400, 60, 4.2, -26.2041, 28.0473, "Johannesburg", "011 123 4578"),
-        ("MTN", "Electronics", "Mobile", "https://mtn.co.za", "📱", 40, 400, 60, 4.1, -26.2041, 28.0473, "Johannesburg", "011 123 4579"),
-        
+        ("Incredible Connection", "Electronics", "Tech", "https://incredible.co.za",
+         "💻", 60, 600, 90, 4.1, -26.107, 28.055, "Sandton City", "011 123 4576"),
+        ("HiFi Corp", "Electronics", "Audio", "https://hificorp.co.za", "🎧", 60,
+         600, 90, 4.0, -26.2041, 28.0473, "Johannesburg CBD", "011 123 4577"),
+        ("Vodacom", "Electronics", "Mobile", "https://vodacom.co.za", "📱",
+         40, 400, 60, 4.2, -26.2041, 28.0473, "Johannesburg", "011 123 4578"),
+        ("MTN", "Electronics", "Mobile", "https://mtn.co.za", "📱", 40,
+         400, 60, 4.1, -26.2041, 28.0473, "Johannesburg", "011 123 4579"),
+
         # Fashion
-        ("Zando", "Fashion", "Clothing", "https://zando.co.za", "👕", 50, 500, 90, 4.3, -33.9249, 18.4241, "Cape Town", "021 123 4580"),
-        ("Superbalist", "Fashion", "Clothing", "https://superbalist.com", "👗", 50, 500, 90, 4.4, -33.9249, 18.4241, "Cape Town", "021 123 4581"),
-        ("Bash", "Fashion", "Clothing", "https://bash.com", "👔", 50, 500, 90, 4.2, -26.2041, 28.0473, "Johannesburg", "011 123 4582"),
-        
+        ("Zando", "Fashion", "Clothing", "https://zando.co.za", "👕", 50,
+         500, 90, 4.3, -33.9249, 18.4241, "Cape Town", "021 123 4580"),
+        ("Superbalist", "Fashion", "Clothing", "https://superbalist.com", "👗",
+         50, 500, 90, 4.4, -33.9249, 18.4241, "Cape Town", "021 123 4581"),
+        ("Bash", "Fashion", "Clothing", "https://bash.com", "👔", 50, 500,
+         90, 4.2, -26.2041, 28.0473, "Johannesburg", "011 123 4582"),
+
         # Hardware
-        ("Builders", "Hardware", "DIY", "https://builders.co.za", "🔨", 60, 600, 120, 4.0, -26.107, 28.055, "Sandton", "011 123 4583"),
-        ("BUCO", "Hardware", "Building", "https://buco.co.za", "🏗️", 60, 600, 120, 3.9, -25.746, 28.188, "Pretoria", "012 123 4584"),
-        ("Leroy Merlin", "Hardware", "DIY", "https://leroymerlin.co.za", "🔧", 60, 600, 120, 4.1, -26.107, 28.055, "Sandton", "011 123 4585"),
-        
+        ("Builders", "Hardware", "DIY", "https://builders.co.za", "🔨",
+         60, 600, 120, 4.0, -26.107, 28.055, "Sandton", "011 123 4583"),
+        ("BUCO", "Hardware", "Building", "https://buco.co.za", "🏗️", 60,
+         600, 120, 3.9, -25.746, 28.188, "Pretoria", "012 123 4584"),
+        ("Leroy Merlin", "Hardware", "DIY", "https://leroymerlin.co.za",
+         "🔧", 60, 600, 120, 4.1, -26.107, 28.055, "Sandton", "011 123 4585"),
+
         # Pharmacy
-        ("Clicks", "Pharmacy", "Health", "https://clicks.co.za", "💊", 30, 300, 60, 4.3, -26.107, 28.055, "Sandton City", "011 123 4586"),
-        ("Dischem", "Pharmacy", "Health", "https://dischem.co.za", "💊", 30, 300, 60, 4.2, -26.107, 28.055, "Sandton City", "011 123 4587"),
-        
+        ("Clicks", "Pharmacy", "Health", "https://clicks.co.za", "💊", 30,
+         300, 60, 4.3, -26.107, 28.055, "Sandton City", "011 123 4586"),
+        ("Dischem", "Pharmacy", "Health", "https://dischem.co.za", "💊", 30,
+         300, 60, 4.2, -26.107, 28.055, "Sandton City", "011 123 4587"),
+
         # Pet
-        ("Pet Heaven", "Pet", "Supplies", "https://petheaven.co.za", "🐕", 50, 500, 90, 4.0, -26.2041, 28.0473, "Johannesburg", "011 123 4588"),
-        ("Absolute Pets", "Pet", "Supplies", "https://absolutepets.co.za", "🐈", 50, 500, 90, 4.1, -26.146, 28.034, "Rosebank", "011 123 4589"),
-        
+        ("Pet Heaven", "Pet", "Supplies", "https://petheaven.co.za", "🐕", 50,
+         500, 90, 4.0, -26.2041, 28.0473, "Johannesburg", "011 123 4588"),
+        ("Absolute Pets", "Pet", "Supplies", "https://absolutepets.co.za",
+         "🐈", 50, 500, 90, 4.1, -26.146, 28.034, "Rosebank", "011 123 4589"),
+
         # Baby
-        ("Baby City", "Baby", "Toddler", "https://babycity.co.za", "👶", 50, 500, 90, 4.2, -26.107, 28.055, "Sandton City", "011 123 4590"),
-        ("Baby Boom", "Baby", "Toddler", "https://babyboom.co.za", "🍼", 50, 500, 90, 4.1, -26.2041, 28.0473, "Johannesburg", "011 123 4591"),
-        
+        ("Baby City", "Baby", "Toddler", "https://babycity.co.za", "👶", 50,
+         500, 90, 4.2, -26.107, 28.055, "Sandton City", "011 123 4590"),
+        ("Baby Boom", "Baby", "Toddler", "https://babyboom.co.za", "🍼", 50,
+         500, 90, 4.1, -26.2041, 28.0473, "Johannesburg", "011 123 4591"),
+
         # Auto
-        ("AutoTrader", "Auto", "Cars", "https://autotrader.co.za", "🚗", 0, 0, 0, 4.3, -26.2041, 28.0473, "Johannesburg", "011 123 4592"),
-        ("WeBuyCars", "Auto", "Cars", "https://webuycars.co.za", "🚙", 0, 0, 0, 4.1, -25.746, 28.188, "Pretoria", "012 123 4593"),
-        ("Cars.co.za", "Auto", "Cars", "https://cars.co.za", "🚘", 0, 0, 0, 4.2, -33.9249, 18.4241, "Cape Town", "021 123 4594"),
-        
+        ("AutoTrader", "Auto", "Cars", "https://autotrader.co.za", "🚗",
+         0, 0, 0, 4.3, -26.2041, 28.0473, "Johannesburg", "011 123 4592"),
+        ("WeBuyCars", "Auto", "Cars", "https://webuycars.co.za", "🚙",
+         0, 0, 0, 4.1, -25.746, 28.188, "Pretoria", "012 123 4593"),
+        ("Cars.co.za", "Auto", "Cars", "https://cars.co.za", "🚘", 0,
+         0, 0, 4.2, -33.9249, 18.4241, "Cape Town", "021 123 4594"),
+
         # Furniture
-        ("Decofurn", "Furniture", "Home", "https://decofurn.co.za", "🛋️", 60, 600, 120, 4.1, -25.780, 28.275, "Menlyn", "012 123 4595"),
-        ("Coricraft", "Furniture", "Home", "https://coricraft.co.za", "🪑", 70, 700, 120, 4.3, -26.107, 28.055, "Sandton City", "011 123 4596"),
-        ("Mr Price Home", "Furniture", "Home", "https://mrpricehome.co.za", "🏠", 50, 500, 90, 4.0, -26.2041, 28.0473, "Johannesburg", "011 123 4597"),
-        
+        ("Decofurn", "Furniture", "Home", "https://decofurn.co.za", "🛋️",
+         60, 600, 120, 4.1, -25.780, 28.275, "Menlyn", "012 123 4595"),
+        ("Coricraft", "Furniture", "Home", "https://coricraft.co.za", "🪑",
+         70, 700, 120, 4.3, -26.107, 28.055, "Sandton City", "011 123 4596"),
+        ("Mr Price Home", "Furniture", "Home", "https://mrpricehome.co.za", "🏠",
+         50, 500, 90, 4.0, -26.2041, 28.0473, "Johannesburg", "011 123 4597"),
+
         # Sports
-        ("Sportsmans Warehouse", "Sports", "Outdoor", "https://sportsmanswarehouse.co.za", "🏃", 50, 500, 90, 4.2, -26.107, 28.055, "Sandton City", "011 123 4598"),
-        ("Totalsports", "Sports", "Apparel", "https://totalsports.co.za", "⚽", 50, 500, 90, 4.1, -26.107, 28.055, "Sandton City", "011 123 4599"),
-        
+        ("Sportsmans Warehouse", "Sports", "Outdoor", "https://sportsmanswarehouse.co.za",
+         "🏃", 50, 500, 90, 4.2, -26.107, 28.055, "Sandton City", "011 123 4598"),
+        ("Totalsports", "Sports", "Apparel", "https://totalsports.co.za", "⚽",
+         50, 500, 90, 4.1, -26.107, 28.055, "Sandton City", "011 123 4599"),
+
         # Books
-        ("Exclusive Books", "Books", "Stationery", "https://exclusivebooks.co.za", "📚", 40, 400, 60, 4.3, -26.107, 28.055, "Sandton City", "011 123 4600"),
-        ("CNA", "Books", "Stationery", "https://cna.co.za", "✏️", 40, 400, 60, 4.0, -26.107, 28.055, "Sandton City", "011 123 4601"),
+        ("Exclusive Books", "Books", "Stationery", "https://exclusivebooks.co.za",
+         "📚", 40, 400, 60, 4.3, -26.107, 28.055, "Sandton City", "011 123 4600"),
+        ("CNA", "Books", "Stationery", "https://cna.co.za", "✏️", 40,
+         400, 60, 4.0, -26.107, 28.055, "Sandton City", "011 123 4601"),
     ]
-    
+
     for r in retailers_data:
-        conn.execute("""INSERT OR IGNORE INTO retailers 
-            (name, category, subcategory, website, logo, delivery_fee, free_delivery_min, delivery_minutes, rating, latitude, longitude, address, phone) 
+        conn.execute("""INSERT OR IGNORE INTO retailers
+            (name, category, subcategory, website, logo, delivery_fee, free_delivery_min, delivery_minutes, rating, latitude, longitude, address, phone)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""", r)
-    
+
     # ========== SEED SERVICE PROVIDERS ==========
-    
+
     services_data = [
         ("Plumbmaster SA", "plumbing", "24/7 Emergency Plumbing Services", 450, "011 123 4567", -26.2041, 28.0473, "Johannesburg CBD", 4.2),
         ("JHB Electricians", "electrical", "Certified Master Electricians", 400, "011 234 5678", -26.2025, 28.0450, "Braamfontein", 4.5),
@@ -384,14 +436,14 @@ def init_db():
         ("Pool Care SA", "pool", "Pool Cleaning & Maintenance", 300, "011 345 6780", -26.2060, 28.0460, "Johannesburg", 4.4),
         ("Tree Felling Pros", "tree_felling", "Tree Removal & Trimming", 500, "011 456 7890", -26.2030, 28.0430, "Johannesburg", 4.1),
     ]
-    
+
     for s in services_data:
-        conn.execute("""INSERT OR IGNORE INTO service_providers 
-            (name, service_type, description, hourly_rate, phone, latitude, longitude, address, rating) 
+        conn.execute("""INSERT OR IGNORE INTO service_providers
+            (name, service_type, description, hourly_rate, phone, latitude, longitude, address, rating)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""", s)
-    
+
     # ========== SEED PHARMACIES ==========
-    
+
     pharmacies_data = [
         ("Clicks Pharmacy Sandton", "Sandton City Shopping Centre", -26.107, 28.055, "011 123 4567", 30, 4.3),
         ("Dischem Sandton", "Sandton City", -26.108, 28.056, "011 123 4568", 30, 4.2),
@@ -401,14 +453,14 @@ def init_db():
         ("Clicks Cape Town", "Cape Town CBD", -33.9249, 18.4241, "021 123 4567", 30, 4.4),
         ("Dischem Cape Town", "Cape Town CBD", -33.925, 18.425, "021 123 4568", 30, 4.3),
     ]
-    
+
     for p in pharmacies_data:
-        conn.execute("""INSERT OR IGNORE INTO pharmacies 
-            (name, address, latitude, longitude, phone, delivery_fee, rating) 
+        conn.execute("""INSERT OR IGNORE INTO pharmacies
+            (name, address, latitude, longitude, phone, delivery_fee, rating)
             VALUES (?, ?, ?, ?, ?, ?, ?)""", p)
-    
+
     # ========== SEED DELIVERY SERVICES ==========
-    
+
     delivery_data = [
         ("Uber Eats", "Food", 10, 5, "https://ubereats.com", "🚗", 4.3),
         ("Mr D Food", "Food", 10, 4, "https://mrdfood.com", "🍔", 4.2),
@@ -416,14 +468,14 @@ def init_db():
         ("Pargo", "Parcel", 25, 3, "https://pargo.co.za", "📦", 4.0),
         ("The Courier Guy", "Parcel", 35, 2, "https://thecourierguy.co.za", "📫", 4.1),
     ]
-    
+
     for d in delivery_data:
-        conn.execute("""INSERT OR IGNORE INTO delivery_services 
-            (name, service_type, base_fee, per_km_rate, website, logo, rating) 
+        conn.execute("""INSERT OR IGNORE INTO delivery_services
+            (name, service_type, base_fee, per_km_rate, website, logo, rating)
             VALUES (?, ?, ?, ?, ?, ?, ?)""", d)
-    
+
     # ========== SEED PRODUCTS ==========
-    
+
     products_data = [
         ("Bread", "Albany", "Grocery", "🍞", 18.99, "loaf"),
         ("Milk 1L", "Clover", "Grocery", "🥛", 22.99, "liter"),
@@ -448,17 +500,19 @@ def init_db():
         ("Paint", "Dulux", "Hardware", "🎨", 299.99, "litre"),
         ("Tools Set", "Stanley", "Hardware", "🔧", 999.99, "set"),
     ]
-    
+
     for p in products_data:
-        conn.execute("""INSERT OR IGNORE INTO products 
-            (product_name, brand, category, emoji, typical_price, unit) 
+        conn.execute("""INSERT OR IGNORE INTO products
+            (product_name, brand, category, emoji, typical_price, unit)
             VALUES (?, ?, ?, ?, ?, ?)""", p)
-    
+
     conn.commit()
     conn.close()
     print("✅ COMPLETE DATABASE INITIALIZED with 50+ retailers, services, pharmacies, and products")
 
+
 init_db()
+
 
 def get_db():
     if "db" not in g:
@@ -466,11 +520,13 @@ def get_db():
         g.db.row_factory = sqlite3.Row
     return g.db
 
+
 @app.teardown_appcontext
 def close_db(exception=None):
     db = g.pop("db", None)
     if db:
         db.close()
+
 
 def login_required(f):
     @wraps(f)
@@ -484,81 +540,106 @@ def login_required(f):
 # API ROUTES
 # ====================================================
 
+
 @app.route("/api/register", methods=["POST"])
 def register():
     data = request.get_json(force=True)
     username = data.get("username", "").strip()
     email = data.get("email", "").strip()
     password = data.get("password", "")
-    
+
     if not username or not password:
         return jsonify({"error": "Username and password required"}), 400
-    
+
     db = get_db()
     try:
-        db.execute("INSERT INTO users (username, email, password_hash) VALUES (?, ?, ?)", 
-                   (username, email, generate_password_hash(password)))
+        db.execute(
+            "INSERT INTO users (username, email, password_hash) VALUES (?, ?, ?)",
+            (username,
+             email,
+             generate_password_hash(password)))
         db.commit()
     except sqlite3.IntegrityError:
         return jsonify({"error": "Username or email already exists"}), 409
-    
+
     return jsonify({"success": True, "message": "User created"})
+
 
 @app.route("/api/login", methods=["POST"])
 def login():
     data = request.get_json(force=True)
     username = data.get("username", "").strip()
     password = data.get("password", "")
-    
+
     db = get_db()
-    user = db.execute("SELECT * FROM users WHERE username = ? OR email = ?", (username, username)).fetchone()
-    
+    user = db.execute(
+        "SELECT * FROM users WHERE username = ? OR email = ?",
+        (username,
+         username)).fetchone()
+
     if not user or not check_password_hash(user["password_hash"], password):
         return jsonify({"error": "Invalid credentials"}), 401
-    
+
     session["user_id"] = user["id"]
     session.permanent = True
-    db.execute("UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = ?", (user["id"],))
+    db.execute(
+        "UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = ?", (user["id"],))
     db.commit()
-    
+
     return jsonify({"id": user["id"], "username": user["username"]})
+
 
 @app.route("/api/logout", methods=["POST"])
 def logout():
     session.clear()
     return jsonify({"success": True})
 
+
 @app.route("/api/me", methods=["GET"])
 @login_required
 def get_me():
     db = get_db()
-    user = db.execute("SELECT id, username, email, full_name, phone, address, household_size, monthly_budget FROM users WHERE id = ?", (session["user_id"],)).fetchone()
+    user = db.execute(
+        "SELECT id, username, email, full_name, phone, address, household_size, monthly_budget FROM users WHERE id = ?",
+        (session["user_id"],
+         )).fetchone()
     return jsonify(dict(user))
 
 # ====================================================
 # RETAILERS ROUTES
 # ====================================================
 
+
 @app.route("/api/retailers", methods=["GET"])
 def get_retailers():
     db = get_db()
     category = request.args.get("category", "")
     if category:
-        retailers = db.execute("SELECT * FROM retailers WHERE category = ? AND is_active = 1 ORDER BY rating DESC", (category,)).fetchall()
+        retailers = db.execute(
+            "SELECT * FROM retailers WHERE category = ? AND is_active = 1 ORDER BY rating DESC",
+            (category,
+             )).fetchall()
     else:
-        retailers = db.execute("SELECT * FROM retailers WHERE is_active = 1 ORDER BY category, rating DESC").fetchall()
+        retailers = db.execute(
+            "SELECT * FROM retailers WHERE is_active = 1 ORDER BY category, rating DESC").fetchall()
     return jsonify([dict(r) for r in retailers])
+
 
 @app.route("/api/retailers/categories", methods=["GET"])
 def get_retailer_categories():
     db = get_db()
-    categories = db.execute("SELECT DISTINCT category FROM retailers ORDER BY category").fetchall()
+    categories = db.execute(
+        "SELECT DISTINCT category FROM retailers ORDER BY category").fetchall()
     return jsonify([c["category"] for c in categories])
+
 
 @app.route("/api/retailers/<int:retailer_id>", methods=["GET"])
 def get_retailer(retailer_id):
     db = get_db()
-    retailer = db.execute("SELECT * FROM retailers WHERE id = ?", (retailer_id,)).fetchone()
+    retailer = db.execute(
+        "SELECT * FROM retailers WHERE id = ?",
+        (retailer_id,
+         )).fetchone()
     if not retailer:
         return jsonify({"error": "Retailer not found"}), 404
     return jsonify(dict(retailer))
@@ -567,92 +648,127 @@ def get_retailer(retailer_id):
 # SERVICE PROVIDER ROUTES
 # ====================================================
 
+
 @app.route("/api/services", methods=["GET"])
 def get_services():
     db = get_db()
     service_type = request.args.get("type", "")
     lat = request.args.get("lat", type=float)
     lng = request.args.get("lng", type=float)
-    
+
     if service_type:
-        providers = db.execute("SELECT * FROM service_providers WHERE service_type = ? AND verified = 1", (service_type,)).fetchall()
+        providers = db.execute(
+            "SELECT * FROM service_providers WHERE service_type = ? AND verified = 1",
+            (service_type,
+             )).fetchall()
     else:
-        providers = db.execute("SELECT * FROM service_providers WHERE verified = 1 LIMIT 50").fetchall()
-    
+        providers = db.execute(
+            "SELECT * FROM service_providers WHERE verified = 1 LIMIT 50").fetchall()
+
     result = []
     for p in providers:
         dist = None
         if lat and lng and p["latitude"]:
-            dist = round(math.sqrt((p["latitude"] - lat)**2 + (p["longitude"] - lng)**2) * 111, 1)
+            dist = round(math.sqrt((p["latitude"] - lat)
+                         ** 2 + (p["longitude"] - lng)**2) * 111, 1)
         result.append(dict(p))
         result[-1]["distance_km"] = dist
-    
+
     result.sort(key=lambda x: x.get("distance_km") or 999)
     return jsonify(result[:30])
+
 
 @app.route("/api/services/register", methods=["POST"])
 @login_required
 def register_service():
     data = request.get_json(force=True)
     db = get_db()
-    cursor = db.execute("""
+    cursor = db.execute(
+        """
         INSERT INTO service_providers (user_id, name, service_type, description, hourly_rate, phone, address, latitude, longitude)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-    """, (session["user_id"], data.get("name"), data.get("service_type"), data.get("description"),
-          data.get("hourly_rate"), data.get("phone"), data.get("address"), data.get("latitude"), data.get("longitude")))
+    """,
+        (session["user_id"],
+         data.get("name"),
+         data.get("service_type"),
+         data.get("description"),
+         data.get("hourly_rate"),
+         data.get("phone"),
+         data.get("address"),
+         data.get("latitude"),
+         data.get("longitude")))
     db.commit()
-    return jsonify({"id": cursor.lastrowid, "message": "Service provider registered! Pending verification."})
+    return jsonify({"id": cursor.lastrowid,
+                    "message": "Service provider registered! Pending verification."})
 
 # ====================================================
 # SPAZA SHOP ROUTES
 # ====================================================
+
 
 @app.route("/api/spaza", methods=["GET"])
 def get_spaza_shops():
     db = get_db()
     lat = request.args.get("lat", type=float)
     lng = request.args.get("lng", type=float)
-    
-    shops = db.execute("SELECT * FROM spaza_shops WHERE verified = 1 LIMIT 50").fetchall()
+
+    shops = db.execute(
+        "SELECT * FROM spaza_shops WHERE verified = 1 LIMIT 50").fetchall()
     result = []
     for s in shops:
         dist = None
         if lat and lng and s["latitude"]:
-            dist = round(math.sqrt((s["latitude"] - lat)**2 + (s["longitude"] - lng)**2) * 111, 1)
+            dist = round(math.sqrt((s["latitude"] - lat)
+                         ** 2 + (s["longitude"] - lng)**2) * 111, 1)
         result.append(dict(s))
         result[-1]["distance_km"] = dist
     result.sort(key=lambda x: x.get("distance_km") or 999)
     return jsonify(result[:30])
+
 
 @app.route("/api/spaza/register", methods=["POST"])
 @login_required
 def register_spaza():
     data = request.get_json(force=True)
     db = get_db()
-    cursor = db.execute("""
+    cursor = db.execute(
+        """
         INSERT INTO spaza_shops (owner_id, shop_name, address, latitude, longitude, phone, whatsapp, category)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    """, (session["user_id"], data.get("shop_name"), data.get("address"), data.get("latitude"),
-          data.get("longitude"), data.get("phone"), data.get("whatsapp"), data.get("category", "General")))
+    """,
+        (session["user_id"],
+         data.get("shop_name"),
+         data.get("address"),
+         data.get("latitude"),
+         data.get("longitude"),
+         data.get("phone"),
+         data.get("whatsapp"),
+         data.get(
+            "category",
+            "General")))
     db.commit()
-    return jsonify({"id": cursor.lastrowid, "message": "Spaza shop registered! Awaiting verification."})
+    return jsonify({"id": cursor.lastrowid,
+                    "message": "Spaza shop registered! Awaiting verification."})
 
 # ====================================================
 # PHARMACY ROUTES
 # ====================================================
+
 
 @app.route("/api/pharmacies", methods=["GET"])
 def get_pharmacies():
     db = get_db()
     lat = request.args.get("lat", type=float)
     lng = request.args.get("lng", type=float)
-    
-    pharmacies = db.execute("SELECT * FROM pharmacies WHERE delivery_available = 1").fetchall()
+
+    pharmacies = db.execute(
+        "SELECT * FROM pharmacies WHERE delivery_available = 1").fetchall()
     result = []
     for p in pharmacies:
         dist = None
         if lat and lng and p["latitude"]:
-            dist = round(math.sqrt((p["latitude"] - lat)**2 + (p["longitude"] - lng)**2) * 111, 1)
+            dist = round(math.sqrt((p["latitude"] - lat)
+                         ** 2 + (p["longitude"] - lng)**2) * 111, 1)
         result.append(dict(p))
         result[-1]["distance_km"] = dist
     result.sort(key=lambda x: x.get("distance_km") or 999)
@@ -662,22 +778,25 @@ def get_pharmacies():
 # DELIVERY SERVICES ROUTES
 # ====================================================
 
+
 @app.route("/api/delivery-services", methods=["GET"])
 def get_delivery_services():
     db = get_db()
-    services = db.execute("SELECT * FROM delivery_services ORDER BY rating DESC").fetchall()
+    services = db.execute(
+        "SELECT * FROM delivery_services ORDER BY rating DESC").fetchall()
     return jsonify([dict(s) for s in services])
 
 # ====================================================
 # PRODUCT ROUTES
 # ====================================================
 
+
 @app.route("/api/products", methods=["GET"])
 def get_products():
     db = get_db()
     category = request.args.get("category", "")
     search = request.args.get("search", "")
-    
+
     query = "SELECT * FROM products WHERE 1=1"
     params = []
     if category:
@@ -686,19 +805,22 @@ def get_products():
     if search:
         query += " AND product_name LIKE ?"
         params.append(f"%{search}%")
-    
+
     products = db.execute(query, params).fetchall()
     return jsonify([dict(p) for p in products])
+
 
 @app.route("/api/products/categories", methods=["GET"])
 def get_product_categories():
     db = get_db()
-    categories = db.execute("SELECT DISTINCT category FROM products ORDER BY category").fetchall()
+    categories = db.execute(
+        "SELECT DISTINCT category FROM products ORDER BY category").fetchall()
     return jsonify([c["category"] for c in categories])
 
 # ====================================================
 # SHOPPING LISTS
 # ====================================================
+
 
 @app.route("/api/lists", methods=["GET", "POST"])
 @login_required
@@ -716,79 +838,125 @@ def handle_lists():
         return jsonify([dict(l) for l in lists])
     else:
         data = request.get_json(force=True)
-        cursor = db.execute("INSERT INTO shopping_lists (user_id, name, total_budget) VALUES (?, ?, ?)", 
-                           (session["user_id"], data.get("name", "My List"), data.get("budget", 0)))
+        cursor = db.execute(
+            "INSERT INTO shopping_lists (user_id, name, total_budget) VALUES (?, ?, ?)",
+            (session["user_id"],
+             data.get(
+                "name",
+                "My List"),
+                data.get(
+                "budget",
+                0)))
         db.commit()
         return jsonify({"id": cursor.lastrowid})
+
 
 @app.route("/api/lists/<int:list_id>", methods=["GET", "PUT", "DELETE"])
 @login_required
 def handle_list(list_id):
     db = get_db()
-    owner = db.execute("SELECT user_id FROM shopping_lists WHERE id = ?", (list_id,)).fetchone()
+    owner = db.execute(
+        "SELECT user_id FROM shopping_lists WHERE id = ?",
+        (list_id,
+         )).fetchone()
     if not owner or owner["user_id"] != session["user_id"]:
         return jsonify({"error": "Unauthorized"}), 403
-    
+
     if request.method == "GET":
-        list_data = db.execute("SELECT * FROM shopping_lists WHERE id = ?", (list_id,)).fetchone()
-        items = db.execute("SELECT * FROM shopping_list_items WHERE list_id = ? ORDER BY priority DESC", (list_id,)).fetchall()
-        return jsonify({"list": dict(list_data), "items": [dict(i) for i in items]})
+        list_data = db.execute(
+            "SELECT * FROM shopping_lists WHERE id = ?", (list_id,)).fetchone()
+        items = db.execute(
+            "SELECT * FROM shopping_list_items WHERE list_id = ? ORDER BY priority DESC",
+            (list_id,
+             )).fetchall()
+        return jsonify({"list": dict(list_data),
+                        "items": [dict(i) for i in items]})
     elif request.method == "DELETE":
-        db.execute("DELETE FROM shopping_list_items WHERE list_id = ?", (list_id,))
+        db.execute(
+            "DELETE FROM shopping_list_items WHERE list_id = ?", (list_id,))
         db.execute("DELETE FROM shopping_lists WHERE id = ?", (list_id,))
         db.commit()
         return jsonify({"success": True})
     else:
         data = request.get_json(force=True)
-        db.execute("UPDATE shopping_lists SET name = ?, total_budget = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
-                  (data.get("name"), data.get("budget"), list_id))
+        db.execute(
+            "UPDATE shopping_lists SET name = ?, total_budget = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
+            (data.get("name"),
+             data.get("budget"),
+             list_id))
         db.commit()
         return jsonify({"success": True})
+
 
 @app.route("/api/lists/<int:list_id>/items", methods=["POST"])
 @login_required
 def add_list_item(list_id):
     data = request.get_json(force=True)
     db = get_db()
-    
-    owner = db.execute("SELECT user_id FROM shopping_lists WHERE id = ?", (list_id,)).fetchone()
+
+    owner = db.execute(
+        "SELECT user_id FROM shopping_lists WHERE id = ?",
+        (list_id,
+         )).fetchone()
     if not owner or owner["user_id"] != session["user_id"]:
         return jsonify({"error": "Unauthorized"}), 403
-    
+
     # Check if item already exists
-    existing = db.execute("SELECT id, quantity FROM shopping_list_items WHERE list_id = ? AND product_name = ?",
-                         (list_id, data.get("product_name"))).fetchone()
-    
+    existing = db.execute(
+        "SELECT id, quantity FROM shopping_list_items WHERE list_id = ? AND product_name = ?",
+        (list_id,
+         data.get("product_name"))).fetchone()
+
     if existing:
-        db.execute("UPDATE shopping_list_items SET quantity = quantity + ? WHERE id = ?",
-                  (data.get("quantity", 1), existing["id"]))
+        db.execute(
+            "UPDATE shopping_list_items SET quantity = quantity + ? WHERE id = ?",
+            (data.get(
+                "quantity",
+                1),
+                existing["id"]))
     else:
         db.execute("""
             INSERT INTO shopping_list_items (list_id, product_name, quantity, priority)
             VALUES (?, ?, ?, ?)
         """, (list_id, data.get("product_name"), data.get("quantity", 1), data.get("priority", 1)))
-    
-    db.execute("UPDATE shopping_lists SET updated_at = CURRENT_TIMESTAMP WHERE id = ?", (list_id,))
+
+    db.execute(
+        "UPDATE shopping_lists SET updated_at = CURRENT_TIMESTAMP WHERE id = ?",
+        (list_id,
+         ))
     db.commit()
     return jsonify({"success": True})
 
-@app.route("/api/lists/<int:list_id>/items/<int:item_id>", methods=["PUT", "DELETE"])
+
+@app.route("/api/lists/<int:list_id>/items/<int:item_id>",
+           methods=["PUT", "DELETE"])
 @login_required
 def modify_list_item(list_id, item_id):
     db = get_db()
-    
-    owner = db.execute("SELECT user_id FROM shopping_lists WHERE id = ?", (list_id,)).fetchone()
+
+    owner = db.execute(
+        "SELECT user_id FROM shopping_lists WHERE id = ?",
+        (list_id,
+         )).fetchone()
     if not owner or owner["user_id"] != session["user_id"]:
         return jsonify({"error": "Unauthorized"}), 403
-    
+
     if request.method == "DELETE":
         db.execute("DELETE FROM shopping_list_items WHERE id = ?", (item_id,))
         db.commit()
         return jsonify({"success": True})
     else:
         data = request.get_json(force=True)
-        db.execute("UPDATE shopping_list_items SET quantity = ?, priority = ?, checked_off = ? WHERE id = ?",
-                  (data.get("quantity"), data.get("priority", 1), data.get("checked_off", 0), item_id))
+        db.execute(
+            "UPDATE shopping_list_items SET quantity = ?, priority = ?, checked_off = ? WHERE id = ?",
+            (data.get("quantity"),
+             data.get(
+                "priority",
+                1),
+                data.get(
+                "checked_off",
+                0),
+                item_id))
         db.commit()
         return jsonify({"success": True})
 
@@ -796,35 +964,47 @@ def modify_list_item(list_id, item_id):
 # BASKET OPTIMIZATION
 # ====================================================
 
+
 @app.route("/api/optimize/<int:list_id>")
 @login_required
 def optimize_basket(list_id):
     db = get_db()
-    
-    owner = db.execute("SELECT user_id, total_budget FROM shopping_lists WHERE id = ?", (list_id,)).fetchone()
+
+    owner = db.execute(
+        "SELECT user_id, total_budget FROM shopping_lists WHERE id = ?",
+        (list_id,
+         )).fetchone()
     if not owner or owner["user_id"] != session["user_id"]:
         return jsonify({"error": "Unauthorized"}), 403
-    
-    items = db.execute("SELECT product_name, quantity FROM shopping_list_items WHERE list_id = ? AND checked_off = 0", (list_id,)).fetchall()
-    retailers = db.execute("SELECT name, delivery_fee, free_delivery_min FROM retailers WHERE is_active = 1").fetchall()
-    
+
+    items = db.execute(
+        "SELECT product_name, quantity FROM shopping_list_items WHERE list_id = ? AND checked_off = 0",
+        (list_id,
+         )).fetchall()
+    retailers = db.execute(
+        "SELECT name, delivery_fee, free_delivery_min FROM retailers WHERE is_active = 1").fetchall()
+
     basket = []
     total = 0
     store_totals = {}
-    
+
     for item in items:
         best_price = 50
         best_store = "Checkers"
-        
+
         # Try to find product price
-        product = db.execute("SELECT typical_price FROM products WHERE product_name LIKE ?", (f"%{item['product_name']}%",)).fetchone()
+        product = db.execute(
+            "SELECT typical_price FROM products WHERE product_name LIKE ?",
+            (f"%{
+                item['product_name']}%",
+             )).fetchone()
         if product and product["typical_price"]:
             best_price = product["typical_price"]
-        
+
         item_total = best_price * item["quantity"]
         total += item_total
         store_totals[best_store] = store_totals.get(best_store, 0) + item_total
-        
+
         basket.append({
             "product": item["product_name"],
             "quantity": item["quantity"],
@@ -832,13 +1012,13 @@ def optimize_basket(list_id):
             "total": round(item_total, 2),
             "store": best_store
         })
-    
+
     delivery_fee = 0
     for store, cost in store_totals.items():
         retailer = next((r for r in retailers if r["name"] == store), None)
         if retailer and retailer["free_delivery_min"] > 0 and cost < retailer["free_delivery_min"]:
             delivery_fee += retailer["delivery_fee"]
-    
+
     return jsonify({
         "items": basket,
         "subtotal": round(total, 2),
@@ -852,12 +1032,16 @@ def optimize_basket(list_id):
 # PRICE ALERTS
 # ====================================================
 
+
 @app.route("/api/alerts", methods=["GET", "POST"])
 @login_required
 def handle_alerts():
     db = get_db()
     if request.method == "GET":
-        alerts = db.execute("SELECT * FROM price_alerts WHERE user_id = ? AND is_active = 1 ORDER BY created_at DESC", (session["user_id"],)).fetchall()
+        alerts = db.execute(
+            "SELECT * FROM price_alerts WHERE user_id = ? AND is_active = 1 ORDER BY created_at DESC",
+            (session["user_id"],
+             )).fetchall()
         return jsonify([dict(a) for a in alerts])
     else:
         data = request.get_json(force=True)
@@ -866,13 +1050,22 @@ def handle_alerts():
             VALUES (?, ?, ?)
         """, (session["user_id"], data.get("product_name"), data.get("target_price")))
         db.commit()
-        return jsonify({"success": True, "message": f"Alert set for {data.get('product_name')} at R{data.get('target_price')}"})
+        return jsonify(
+            {
+                "success": True,
+                "message": f"Alert set for {
+                    data.get('product_name')} at R{
+                    data.get('target_price')}"})
+
 
 @app.route("/api/alerts/<int:alert_id>", methods=["DELETE"])
 @login_required
 def delete_alert(alert_id):
     db = get_db()
-    db.execute("UPDATE price_alerts SET is_active = 0 WHERE id = ? AND user_id = ?", (alert_id, session["user_id"]))
+    db.execute(
+        "UPDATE price_alerts SET is_active = 0 WHERE id = ? AND user_id = ?",
+        (alert_id,
+         session["user_id"]))
     db.commit()
     return jsonify({"success": True})
 
@@ -880,24 +1073,35 @@ def delete_alert(alert_id):
 # COMMUNITY PRICES
 # ====================================================
 
+
 @app.route("/api/community/price", methods=["POST"])
 @login_required
 def report_community_price():
     data = request.get_json(force=True)
     db = get_db()
-    db.execute("""
+    db.execute(
+        """
         INSERT INTO community_prices (user_id, product_name, retailer_name, price, location, latitude, longitude)
         VALUES (?, ?, ?, ?, ?, ?, ?)
-    """, (session["user_id"], data.get("product_name"), data.get("retailer_name"),
-          data.get("price"), data.get("location"), data.get("latitude"), data.get("longitude")))
+    """,
+        (session["user_id"],
+         data.get("product_name"),
+         data.get("retailer_name"),
+         data.get("price"),
+         data.get("location"),
+         data.get("latitude"),
+         data.get("longitude")))
     db.commit()
-    
-    avg = db.execute("SELECT AVG(price) as avg_price FROM community_prices WHERE product_name = ?", (data.get("product_name"),)).fetchone()
-    return jsonify({
-        "success": True,
-        "message": "Price reported! Thanks for contributing.",
-        "average_price": round(avg["avg_price"], 2) if avg["avg_price"] else data.get("price")
-    })
+
+    avg = db.execute(
+        "SELECT AVG(price) as avg_price FROM community_prices WHERE product_name = ?",
+        (data.get("product_name"),
+         )).fetchone()
+    return jsonify({"success": True,
+                    "message": "Price reported! Thanks for contributing.",
+                    "average_price": round(avg["avg_price"],
+                                           2) if avg["avg_price"] else data.get("price")})
+
 
 @app.route("/api/community/trends/<product>", methods=["GET"])
 def get_price_trends(product):
@@ -915,26 +1119,39 @@ def get_price_trends(product):
 # BUSINESS REGISTRATION
 # ====================================================
 
+
 @app.route("/api/business/register", methods=["POST"])
 @login_required
 def register_business():
     data = request.get_json(force=True)
     db = get_db()
-    cursor = db.execute("""
+    cursor = db.execute(
+        """
         INSERT INTO businesses (owner_id, business_name, business_type, registration_number, address, phone, email, website)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    """, (session["user_id"], data.get("business_name"), data.get("business_type"),
-          data.get("registration_number"), data.get("address"), data.get("phone"),
-          data.get("email"), data.get("website")))
+    """,
+        (session["user_id"],
+         data.get("business_name"),
+         data.get("business_type"),
+         data.get("registration_number"),
+         data.get("address"),
+         data.get("phone"),
+         data.get("email"),
+         data.get("website")))
     db.commit()
-    db.execute("UPDATE users SET is_business = 1, business_name = ?, business_type = ? WHERE id = ?",
-              (data.get("business_name"), data.get("business_type"), session["user_id"]))
+    db.execute(
+        "UPDATE users SET is_business = 1, business_name = ?, business_type = ? WHERE id = ?",
+        (data.get("business_name"),
+         data.get("business_type"),
+         session["user_id"]))
     db.commit()
-    return jsonify({"id": cursor.lastrowid, "message": "Business registered! Pending verification."})
+    return jsonify({"id": cursor.lastrowid,
+                    "message": "Business registered! Pending verification."})
 
 # ====================================================
 # NEURAL BRAIN ROUTES
 # ====================================================
+
 
 @app.route("/api/brain/think", methods=["POST"])
 def brain_think():
@@ -948,6 +1165,7 @@ def brain_think():
     result = neural_brain.think(context)
     return jsonify(result)
 
+
 @app.route("/api/brain/status", methods=["GET"])
 def brain_status():
     return jsonify({
@@ -959,6 +1177,7 @@ def brain_status():
 # ====================================================
 # LOCATION & MAPS
 # ====================================================
+
 
 @app.route("/api/location/detect", methods=["GET"])
 def detect_location():
@@ -974,9 +1193,11 @@ def detect_location():
                     "city": data.get("city", "Johannesburg"),
                     "country": data.get("country", "South Africa")
                 })
-    except:
+    except BaseException:
         pass
-    return jsonify({"latitude": -26.2041, "longitude": 28.0473, "city": "Johannesburg", "country": "South Africa"})
+    return jsonify({"latitude": -26.2041, "longitude": 28.0473,
+                   "city": "Johannesburg", "country": "South Africa"})
+
 
 @app.route("/api/location/nearby", methods=["GET"])
 def get_nearby_locations():
@@ -984,12 +1205,12 @@ def get_nearby_locations():
     lat = request.args.get("lat", type=float)
     lng = request.args.get("lng", type=float)
     radius = request.args.get("radius", 5, type=float)
-    
+
     if not lat or not lng:
         return jsonify({"error": "Location required"}), 400
-    
+
     db = get_db()
-    
+
     # Find nearby retailers
     retailers = db.execute("""
         SELECT id, name, category, address, latitude, longitude, rating, delivery_fee,
@@ -999,7 +1220,7 @@ def get_nearby_locations():
         ORDER BY distance_sq ASC
         LIMIT 20
     """, (lat, lat, lng, lng)).fetchall()
-    
+
     # Find nearby pharmacies
     pharmacies = db.execute("""
         SELECT id, name, address, latitude, longitude, phone, rating, delivery_fee,
@@ -1009,7 +1230,7 @@ def get_nearby_locations():
         ORDER BY distance_sq ASC
         LIMIT 10
     """, (lat, lat, lng, lng)).fetchall()
-    
+
     # Find nearby service providers
     services = db.execute("""
         SELECT id, name, service_type, phone, address, rating, hourly_rate,
@@ -1019,7 +1240,7 @@ def get_nearby_locations():
         ORDER BY distance_sq ASC
         LIMIT 20
     """, (lat, lat, lng, lng)).fetchall()
-    
+
     # Calculate distances in km
     for r in retailers:
         r["distance_km"] = round((r["distance_sq"] ** 0.5) * 111, 1)
@@ -1027,7 +1248,7 @@ def get_nearby_locations():
         p["distance_km"] = round((p["distance_sq"] ** 0.5) * 111, 1)
     for s in services:
         s["distance_km"] = round((s["distance_sq"] ** 0.5) * 111, 1)
-    
+
     return jsonify({
         "retailers": [dict(r) for r in retailers],
         "pharmacies": [dict(p) for p in pharmacies],
@@ -1038,19 +1259,20 @@ def get_nearby_locations():
 # ANALYTICS
 # ====================================================
 
+
 @app.route("/api/analytics/spending", methods=["GET"])
 @login_required
 def get_spending_analytics():
     db = get_db()
     days = request.args.get("days", 30, type=int)
-    
+
     # Get shopping list trends
     lists = db.execute("""
         SELECT COUNT(*) as total_lists, AVG(total_budget) as avg_budget
         FROM shopping_lists
         WHERE user_id = ? AND created_at > datetime('now', ?)
     """, (session["user_id"], f"-{days} days")).fetchone()
-    
+
     # Get most added items
     top_items = db.execute("""
         SELECT product_name, SUM(quantity) as total_quantity, COUNT(*) as times_added
@@ -1061,7 +1283,7 @@ def get_spending_analytics():
         ORDER BY total_quantity DESC
         LIMIT 10
     """, (session["user_id"], f"-{days} days")).fetchall()
-    
+
     return jsonify({
         "total_lists": lists["total_lists"] or 0,
         "average_budget": round(lists["avg_budget"] or 0, 2),
@@ -1071,6 +1293,7 @@ def get_spending_analytics():
 # ====================================================
 # HEALTH CHECK
 # ====================================================
+
 
 @app.route("/api/health", methods=["GET"])
 def health_check():
@@ -1086,10 +1309,14 @@ def health_check():
 # COMPLETE FRONTEND
 # ====================================================
 
+
 HTML_TEMPLATE = '''
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <link rel="manifest" href="/static/manifest.json">
+    <meta name="theme-color" content="#1f8a4c">
+    <link rel="apple-touch-icon" href="/static/icon-192.png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>ShopAround - Complete Online Mall</title>
@@ -1796,17 +2023,19 @@ autoDemo();
 </html>
 '''
 
+
 @app.route("/")
 def index():
     return render_template_string(HTML_TEMPLATE)
+
 
 app = add_real_maps(app)
 app = add_online_shops(app)
 
 if __name__ == "__main__":
-    print("="*70)
+    print("=" * 70)
     print("🏆 SHOPAROUND - COMPLETE PROFESSIONAL ONLINE MALL")
-    print("="*70)
+    print("=" * 70)
     print("✅ 50+ Retailers (All major South African online stores)")
     print("✅ 20+ Service Providers (Plumbing, Electrical, Mechanic, Cleaning, etc.)")
     print("✅ Delivery Services (Uber Eats, Mr D, Bolt Food, Pargo)")
@@ -1817,7 +2046,7 @@ if __name__ == "__main__":
     print("✅ Price Alerts & Community Prices")
     print("✅ Business Registration")
     print("✅ Google Maps Integration for nearby discovery")
-    print("="*70)
+    print("=" * 70)
     print("🌐 Open: http://localhost:5000")
-    print("="*70)
+    print("=" * 70)
     app.run(host="0.0.0.0", port=5000, debug=True)

@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: shoparound
+    runtime: python
+    repo: https://github.com/GhostAISecurity/ShopAroundApp
+    plan: free
+    region: frankfurt
+    buildCommand: pip install flask werkzeug requests
+    startCommand: gunicorn shoparound_professional:app
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: SECRET_KEY
+        generateValue: true
+    healthCheckPath: /api/health
+    autoDeploy: true
