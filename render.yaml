@@ -1,11 +1,11 @@
 services:
   - type: web
-    name: shoparound
+    name: shoparound-nexus
     runtime: python
     repo: https://github.com/GhostAISecurity/ShopAroundApp
     plan: free
     region: frankfurt
-    buildCommand: pip install flask werkzeug requests
+    buildCommand: pip install -r requirements.txt
     startCommand: gunicorn shoparound_professional:app
     envVars:
       - key: PYTHON_VERSION
