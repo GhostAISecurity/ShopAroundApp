@@ -14,9 +14,12 @@
     "test": "pnpm -w -r test"
   },
   "devDependencies": {
-    "typescript": "^5.1.6",
     "eslint": "^8.45.0",
+    "pnpm": "^11.6.0",
     "prettier": "^3.0.3",
-    "pnpm": "^8.9.0"
+    "typescript": "^5.1.6"
+  },
+  "dependencies": {
+    "supabase": "^2.106.0"
   }
 }
